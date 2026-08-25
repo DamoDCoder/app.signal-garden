@@ -1,0 +1,360 @@
+/*
+ * A dark instrument panel, because a garden under pressure is the thing that
+ * should be bright. Colours carry meaning here rather than decoration: green is
+ * health, blue is moisture, amber is a warning the system raised, red is a
+ * break in something the contract promised.
+ */
+
+:root {
+  --bg: #0d1117;
+  --panel: #151b23;
+  --line: #232c38;
+  --text: #e6edf3;
+  --muted: #8b98a5;
+  --green: #3fb950;
+  --blue: #58a6ff;
+  --amber: #d29922;
+  --red: #f85149;
+
+  color-scheme: dark;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.app-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.app-header h1 {
+  font-size: 1.1rem;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.run-id {
+  font-family: ui-monospace, monospace;
+  color: var(--muted);
+}
+
+.badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  border-radius: 3px;
+}
+
+.setup {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  padding-top: 1rem;
+}
+
+.dashboard {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 2fr 1fr;
+  padding-top: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.panel h2 small {
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 0.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+label small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+input {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.35rem 0.5rem;
+  background: #0b0f14;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+}
+
+input[type='range'] {
+  padding: 0;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  background: var(--blue);
+  color: #06121f;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin: 0 0 0.75rem;
+}
+
+legend {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.control-slider output {
+  font-family: ui-monospace, monospace;
+  color: var(--blue);
+}
+
+.control-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.revision-receipt,
+.hint,
+.empty {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.invalid {
+  color: var(--amber);
+  font-size: 0.78rem;
+}
+
+/* Connection status. The dot is the fastest read on the page. */
+.connection {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.connection[data-status='live'] .connection-dot {
+  background: var(--green);
+}
+
+.connection[data-status='resuming'] .connection-dot,
+.connection[data-status='connecting'] .connection-dot,
+.connection[data-status='reconnecting'] .connection-dot {
+  background: var(--amber);
+}
+
+.connection[data-status='failed'] .connection-dot {
+  background: var(--red);
+}
+
+.connection-offset {
+  font-family: ui-monospace, monospace;
+}
+
+.handover-break,
+.error-banner {
+  flex-basis: 100%;
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  color: var(--red);
+  font-size: 0.8rem;
+}
+
+.error-banner {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Garden. Stage is size, health is hue, moisture is the ring. */
+.garden-stats,
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.stat,
+.metric {
+  background: #0b0f14;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+
+.stat dt,
+.metric dt {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.stat dd,
+.metric dd {
+  margin: 0.15rem 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
+
+.organisms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.organism {
+  --size: calc(10px + var(--stage) * 22px);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--green) calc(var(--health) * 100%), var(--red));
+  box-shadow: 0 0 0 calc(1px + var(--moisture) * 3px)
+    color-mix(in oklab, var(--blue) calc(var(--moisture) * 60%), transparent);
+  transition:
+    width 200ms linear,
+    height 200ms linear,
+    background 200ms linear;
+}
+
+.organism[data-dead='true'] {
+  background: var(--line);
+  box-shadow: none;
+}
+
+.garden-hash {
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.by-type,
+.event-feed ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.by-type li,
+.event-feed li {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.event-feed li[data-type='pest'] .event-type {
+  color: var(--red);
+}
+
+.event-feed li[data-type='rain'] .event-type {
+  color: var(--blue);
+}
+
+.event-feed li[data-type='growth'] .event-type {
+  color: var(--green);
+}
+
+.run-summary dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.run-summary dt {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.run-summary dd {
+  margin: 0.15rem 0 0;
+  font-family: ui-monospace, monospace;
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}

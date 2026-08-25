@@ -1,0 +1,11 @@
+# Generated from the contract; regenerating must produce no diff.
+src/gen/signal
+src/gen/google
+
+# Vendored from the daemon repository.
+proto
+third_party
+
+dist
+node_modules
+package-lock.json

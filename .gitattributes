@@ -1,0 +1,6 @@
+# Generated from the contract, reviewed as a diff but not authored.
+src/gen/** linguist-generated=true
+
+# Vendored from the daemon repository at the tag in CONTRACT.
+proto/** linguist-vendored=true
+third_party/** linguist-vendored=true

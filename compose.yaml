@@ -1,0 +1,62 @@
+# The whole local stack: a daemon and a browser client.
+#
+# It lives here rather than in the daemon repository because the dependency runs
+# one way — the client needs a daemon to talk to, and the daemon needs nothing
+# from the client. The daemon stays runnable with `task serve` alone.
+#
+# The daemon *image* is not built here. That repository ships it, because an
+# artifact belongs to whoever knows how to build it; this file names it and
+# expects to find it in the local image store:
+#
+#   cd ../signal-garden && task docker:build
+#
+# `task up` checks it is there, and checks the version stamped into it against
+# the tag in CONTRACT, before starting anything.
+
+services:
+  garden:
+    image: ${SIGNAL_GARDEN_IMAGE:-signal-garden/signalgardend}:${SIGNAL_GARDEN_IMAGE_TAG:-local}
+    # There is no registry in this project. Without this, a missing image fails
+    # with an authentication error against a registry nobody configured, rather
+    # than saying it is not here.
+    pull_policy: never
+    ports:
+      # 8080 is the generated REST gateway and the projection stream; 9090 is
+      # gRPC, exposed so grpcurl works against a running stack.
+      - '8080:8080'
+      - '9090:9090'
+    environment:
+      SIGNAL_GARDEN_DATA_DIR: /data
+      # refuse is the daemon's default: a log that opens with bytes the disk got
+      # wrong stops the run rather than quietly serving a different garden.
+      SIGNAL_GARDEN_ON_CORRUPT: ${SIGNAL_GARDEN_ON_CORRUPT:-refuse}
+      # The client is a different origin from the daemon in development. Without
+      # this the stream would connect and every button would fail, because
+      # WebSockets do not preflight and REST calls do.
+      SIGNAL_GARDEN_CORS_ORIGIN: ${SIGNAL_GARDEN_CORS_ORIGIN:-*}
+    volumes:
+      - garden-data:/data
+    # The health check is in the image, so `service_healthy` below works against
+    # a plain `docker run` too rather than only inside this file.
+
+  web:
+    # Built from this repository, because this is where its source is.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '5173:5173'
+    environment:
+      # The browser resolves this, not the container, so it is the published
+      # host port rather than the compose service name.
+      VITE_SIGNAL_GARDEN_HTTP: ${VITE_SIGNAL_GARDEN_HTTP:-http://localhost:8080}
+    volumes:
+      - ./src:/app/src
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+    depends_on:
+      garden:
+        condition: service_healthy
+
+volumes:
+  garden-data:

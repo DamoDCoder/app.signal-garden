@@ -1,0 +1,138 @@
+# Task runner for the Signal Garden client. Run `task --list` to see what is
+# here. The daemon repository uses the same runner, so a person moving between
+# the two checkouts types the same things.
+version: '3'
+
+vars:
+  # The daemon tag this client is generated against and builds in compose.
+  # One place, read by both, so they cannot drift apart.
+  CONTRACT_TAG:
+    sh: tr -d '[:space:]' < CONTRACT
+
+  # The daemon image compose runs. `:local` is the moving tag `task docker:build`
+  # writes in the daemon checkout for a build matching this machine, so the
+  # everyday path needs no bump here; the version it was built from is checked
+  # against CONTRACT before the stack starts rather than assumed.
+  #
+  # IMAGE and TAG are read from the environment rather than defaulted here: a
+  # variable given on the command line reaches a task's own vars but not the
+  # global ones, so `task up TAG=v0.7.1` would be silently ignored. Reading the
+  # environment makes both `TAG=v0.7.1 task up` and the per-task override below
+  # work, and neither of them lie.
+  DAEMON_IMAGE: '{{.IMAGE | default (env "IMAGE") | default "signal-garden/signalgardend"}}'
+  DAEMON_TAG: '{{.TAG | default (env "TAG") | default "local"}}'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Install dependencies and generate the contract
+    cmds:
+      - npm install
+      - task: contract
+
+  contract:
+    desc: 'Vendor the contract at the tag in CONTRACT and generate TypeScript'
+    cmds:
+      - scripts/fetch-contract.sh
+      - scripts/generate.sh
+
+  dev:
+    desc: Run the development server against a daemon on localhost:8080
+    cmds:
+      - npm run dev
+
+  up:
+    desc: 'Start the whole stack: daemon and client'
+    env:
+      SIGNAL_GARDEN_IMAGE: '{{.IMAGE | default .DAEMON_IMAGE}}'
+      SIGNAL_GARDEN_IMAGE_TAG: '{{.TAG | default .DAEMON_TAG}}'
+    deps:
+      - task: check-image
+        vars: { IMAGE: '{{.IMAGE}}', TAG: '{{.TAG}}' }
+    cmds:
+      - docker compose up --build {{.CLI_ARGS}}
+
+  check-image:
+    desc: Check the local daemon image exists and matches the pinned contract
+    silent: true
+    vars:
+      DAEMON_IMAGE: '{{.IMAGE | default .DAEMON_IMAGE}}'
+      DAEMON_TAG: '{{.TAG | default .DAEMON_TAG}}'
+    cmds:
+      # The daemon repository builds this image; nothing here can produce it.
+      # Failing with the command that would is more use than failing with
+      # "manifest unknown".
+      - |
+        image="{{.DAEMON_IMAGE}}:{{.DAEMON_TAG}}"
+        if ! docker image inspect "$image" >/dev/null 2>&1; then
+          echo "No local daemon image $image." >&2
+          echo "Build it in the daemon checkout:" >&2
+          echo "  cd ../signal-garden && task docker:build" >&2
+          exit 1
+        fi
+        built="$(docker image inspect "$image" \
+          --format '{{`{{index .Config.Labels "org.opencontainers.image.version"}}`}}')"
+        case "$built" in
+          "{{.CONTRACT_TAG}}"|"{{.CONTRACT_TAG}}-dirty")
+            echo "$image was built from $built, which matches CONTRACT" ;;
+          "")
+            echo "warning: $image carries no version label — rebuild it with task docker:build" >&2 ;;
+          *)
+            echo "warning: $image was built from $built, but this client is generated against {{.CONTRACT_TAG}}" >&2
+            echo "         the browser and the daemon may disagree about the contract" >&2 ;;
+        esac
+
+  down:
+    desc: Stop the stack
+    env:
+      SIGNAL_GARDEN_IMAGE: '{{.DAEMON_IMAGE}}'
+      SIGNAL_GARDEN_IMAGE_TAG: '{{.DAEMON_TAG}}'
+    cmds:
+      - docker compose down
+
+  reset:
+    desc: Stop the stack and delete every run history it wrote
+    env:
+      SIGNAL_GARDEN_IMAGE: '{{.DAEMON_IMAGE}}'
+      SIGNAL_GARDEN_IMAGE_TAG: '{{.DAEMON_TAG}}'
+    prompt: This deletes all run history in the garden-data volume. Continue?
+    cmds:
+      - docker compose down --volumes
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - npm run test
+
+  test-e2e:
+    desc: 'Run the browser journey (needs a running daemon)'
+    cmds:
+      - npm run test:e2e
+
+  typecheck:
+    desc: Typecheck without emitting
+    cmds:
+      - npm run typecheck
+
+  lint:
+    desc: Lint
+    cmds:
+      - npm run lint
+
+  format:
+    desc: Format
+    cmds:
+      - npm run format
+
+  check:
+    desc: Format, typecheck, lint, and test
+    cmds:
+      - task: format
+      - task: typecheck
+      - task: lint
+      - task: test
