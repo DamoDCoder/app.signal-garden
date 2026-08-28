@@ -40,7 +40,9 @@ daemon and a large message here.
 
 **What this client does:** keeps the newest 200 records for display and drops the rest. The garden
 is not built from them — the snapshot behind the catch-up frame is authoritative — so dropping them
-loses a view of what was missed, never a piece of the garden.
+loses a view of what was missed, never a piece of the garden. The panel's own count reads the catch-up
+frame's `to - from` rather than the truncated list's length, so "Missed while away" states the true
+size of the gap even when it is showing only the most recent 200 of it.
 
 ## No Reload Survival
 

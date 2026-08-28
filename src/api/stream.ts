@@ -117,6 +117,18 @@ export class ProjectionStream {
     socket?.close(1000, 'client closed');
   }
 
+  /**
+   * Close the live socket on purpose, not terminally. This takes the exact
+   * path a real drop takes — the same `onclose` handler, the same resume
+   * from `folded_offset`, the same catch-up and handover check — so that
+   * path can be watched on demand rather than only trusted. 3000 is an
+   * application-defined close code, chosen so this never collides with 1000
+   * ("run finished"), which onclose treats as terminal.
+   */
+  disconnect(): void {
+    this.#socket?.close(3000, 'reconnect demo');
+  }
+
   /** Where a reconnect would resume from, for display. */
   get foldedOffset(): bigint | undefined {
     return this.#foldedOffset;

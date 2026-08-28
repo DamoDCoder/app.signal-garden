@@ -69,8 +69,16 @@ export interface GardenState {
     handoverBreak: HandoverBreak | undefined;
   };
 
-  /** Newest first. Only ever populated by catch-up frames. */
+  /** Newest first. Only ever populated by catch-up frames, and capped at eventFeedLimit. */
   missedEvents: GardenEvent[];
+
+  /**
+   * The true size of the last catch-up, in records — `to - from` from the
+   * catch-up frame itself, not `missedEvents.length`. A gap larger than
+   * eventFeedLimit truncates the display list, and reporting its length as
+   * the gap would understate a catch-up that covered thousands of records.
+   */
+  lastCatchup: { from: bigint; to: bigint } | undefined;
 
   /** In-flight command count, so buttons can show they are working. */
   pending: number;
@@ -89,6 +97,7 @@ const initialState: GardenState = {
   draft: undefined,
   stream: { status: 'connecting', detail: undefined, handoverBreak: undefined },
   missedEvents: [],
+  lastCatchup: undefined,
   pending: 0,
   error: undefined,
 };
@@ -103,7 +112,7 @@ export type GardenAction =
   | { type: 'controls/accepted'; revision: ControlRevision }
   | { type: 'stream/status'; status: StreamStatus; detail?: string | undefined }
   | { type: 'stream/handoverBreak'; gap: HandoverBreak }
-  | { type: 'stream/catchup'; events: GardenEvent[] }
+  | { type: 'stream/catchup'; from: bigint; to: bigint; events: GardenEvent[] }
   | { type: 'command/started' }
   | { type: 'command/settled' }
   | { type: 'error/raised'; error: GardenError }
@@ -120,6 +129,8 @@ export function reducer(state: GardenState, action: GardenAction): GardenState {
         telemetry: undefined,
         telemetryHistory: [],
         hashStableSince: undefined,
+        missedEvents: [],
+        lastCatchup: undefined,
         error: undefined,
       };
 
@@ -205,6 +216,7 @@ export function reducer(state: GardenState, action: GardenAction): GardenState {
       return {
         ...state,
         missedEvents: [...action.events].reverse().slice(0, eventFeedLimit),
+        lastCatchup: { from: action.from, to: action.to },
       };
 
     case 'command/started':

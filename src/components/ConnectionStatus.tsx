@@ -20,7 +20,7 @@ const label: Record<string, string> = {
   failed: 'disconnected',
 };
 
-export function ConnectionStatus(): ReactNode {
+export function ConnectionStatus({ onDisconnect }: { onDisconnect: () => void }): ReactNode {
   const { stream, snapshot } = useGarden();
 
   return (
@@ -33,6 +33,16 @@ export function ConnectionStatus(): ReactNode {
           tick {num(snapshot.tick)} · frame {num(snapshot.sequence)} · resumes at{' '}
           {num(snapshot.foldedOffset)}
         </span>
+      )}
+      {stream.status === 'live' && (
+        <button
+          type="button"
+          className="disconnect-demo"
+          title="close the socket on purpose and watch it resume from folded_offset"
+          onClick={onDisconnect}
+        >
+          Drop connection
+        </button>
       )}
       {stream.handoverBreak !== undefined && (
         <p role="alert" className="handover-break">

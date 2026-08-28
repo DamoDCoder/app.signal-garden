@@ -13,13 +13,24 @@ import { num } from '../api/json.js';
 import { useGarden } from '../state/gardenStore.js';
 
 export function EventFeed(): ReactNode {
-  const { missedEvents } = useGarden();
+  const { missedEvents, lastCatchup } = useGarden();
   if (missedEvents.length === 0) return null;
+
+  // The true gap, not the display list's length: a catch-up larger than the
+  // feed's cap truncates what is shown, and reporting that shorter length as
+  // the gap would understate how much a resume actually covered.
+  const gap =
+    lastCatchup !== undefined ? num(lastCatchup.to - lastCatchup.from) : missedEvents.length;
+  const truncated = gap > missedEvents.length;
 
   return (
     <section className="panel event-feed">
       <h2>
-        Missed while away <small>{missedEvents.length} records, newest first</small>
+        Missed while away{' '}
+        <small>
+          {gap} record{gap === 1 ? '' : 's'}, newest first
+          {truncated && ` · showing the most recent ${missedEvents.length}`}
+        </small>
       </h2>
       <ol>
         {missedEvents.map((event) => (

@@ -29,7 +29,7 @@ export function App(): ReactNode {
   const { run, snapshot } = useGarden();
   const dispatch = useGardenDispatch();
 
-  useProjectionStream(runId);
+  const { disconnect } = useProjectionStream(runId);
   // A finished run's counters do not move, so polling one is noise.
   useTelemetry(runId, (snapshot?.state ?? run?.state) !== RunState.FINISHED);
 
@@ -55,7 +55,7 @@ export function App(): ReactNode {
                 resumed
               </span>
             )}
-            <ConnectionStatus />
+            <ConnectionStatus onDisconnect={disconnect} />
             <button type="button" onClick={leave}>
               Leave run
             </button>

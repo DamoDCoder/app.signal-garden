@@ -75,10 +75,10 @@ A break in the handover — a catch-up frame that ends somewhere other than wher
 it stands — is an alert, not a log line. It means the garden on screen was not built from the
 records this client was given, and there is no honest way to render over that.
 
-## What The Interface Still Owes M1
+## What The Interface Owes M1
 
-The daemon's feedback plan asks, after M1: _does the UI make system pressure legible?_ Three of the
-four gaps this raised are answered now:
+The daemon's feedback plan asks, after M1: _does the UI make system pressure legible?_ All four gaps
+this raised are answered:
 
 - **A pressure history, not just instantaneous counters.** `published`, `applied`, and
   `uncommitted` each keep a 60-sample rolling window and plot it as a sparkline; `published` and
@@ -92,8 +92,11 @@ four gaps this raised are answered now:
   ticks away`, counting down as the stream's snapshots advance, then switching to `landed` once
   `snapshot.revision` actually reaches `N` — not a guess from tick arithmetic alone, since a
   snapshot's own revision is what the daemon says is in effect.
-
-Still open:
-
-- **Reconnect as a demonstrable act**: dropping the socket on purpose and watching the catch-up
-  frame arrive, with the gap it covered stated in records rather than implied.
+- **Reconnect as a demonstrable act.** A "Drop connection" button next to the connection status,
+  live only while the stream is `live`, closes the socket with an application-defined close code
+  (3000, so it is never mistaken for the daemon's own 1000 "run finished"). The `onclose` handler
+  cannot tell that from a real drop, so it takes the exact same path: `reconnecting`, `resuming`
+  from `folded_offset`, the catch-up frame, the handover check. "Missed while away" states the
+  gap's true size — `catchup.to - catchup.from` — even when the display list itself is capped at
+  200 records, which it previously was not: the panel used to report the truncated list's length
+  as the gap, understating a large one.

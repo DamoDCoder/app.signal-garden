@@ -224,6 +224,20 @@ legend {
   background: var(--muted);
 }
 
+.disconnect-demo {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.disconnect-demo:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
 .connection[data-status='live'] .connection-dot {
   background: var(--green);
 }

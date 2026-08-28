@@ -15,8 +15,8 @@ now waiting on.
 - Browser tests cover the primary journey.
 
 **Feedback question:** _does the UI make system pressure legible?_ [docs/ui.md](ui.md) tracks this —
-a pressure history, duplicate delivery visible in the garden's stillness, and tick-boundary latency
-are answered; reconnect as a demonstrable act, rather than an invisible recovery, is what remains.
+all four gaps it raised (a pressure history, duplicate delivery in the garden's stillness,
+tick-boundary latency, and reconnect as a demonstrable act) are now answered.
 
 ## M2: Event Backbone And Replay — _supported, not yet shown off_
 
