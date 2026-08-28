@@ -11,7 +11,7 @@ browser, and the Compose file that runs both.
 ## Status
 
 **Scaffolded, not yet implemented.** The transport layer, the store, and the panel skeletons are
-here and wired to the contract at `v0.7.1`. What is deliberately thin is the interface itself: the
+here and wired to the contract at `v0.8.0`. What is deliberately thin is the interface itself: the
 components render real data and are laid out, but the garden is circles and the panels are
 tables. That is M1's remaining work, and it is the point of the repository rather than a detail of
 it.

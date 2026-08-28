@@ -353,6 +353,11 @@ legend {
   background: var(--line);
 }
 
+.hash-duplicates {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: var(--green);
+}
+
 .garden-hash {
   font-family: ui-monospace, monospace;
   font-size: 0.7rem;

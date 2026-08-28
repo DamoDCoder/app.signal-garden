@@ -17,6 +17,8 @@ import { useRunCommands } from '../hooks/useRunCommands.js';
 import { useEffectiveControls, useGarden, useGardenDispatch } from '../state/gardenStore.js';
 import { ControlSlider } from './RunLauncher.js';
 
+const pluralTicks = (n: number): string => `${n} tick${n === 1 ? '' : 's'}`;
+
 export function ControlPanel(): ReactNode {
   const { run, draft, revision, pending, snapshot } = useGarden();
   const dispatch = useGardenDispatch();
@@ -90,6 +92,12 @@ export function ControlPanel(): ReactNode {
       {revision !== undefined && (
         <p className="revision-receipt">
           revision {revision.revision} takes effect at tick {num(revision.effectiveTick)}
+          {snapshot !== undefined &&
+            (snapshot.revision < revision.revision ? (
+              <> — {pluralTicks(Math.max(0, num(revision.effectiveTick - snapshot.tick)))} away</>
+            ) : (
+              <> — landed</>
+            ))}
         </p>
       )}
     </section>

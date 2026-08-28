@@ -50,6 +50,15 @@ export interface GardenState {
   /** The last accepted control change, which names the tick it takes effect on. */
   revision: ControlRevision | undefined;
 
+  /**
+   * The processor's duplicate count at the moment the current hash first
+   * appeared. The difference between that and the latest polled count is how
+   * many redelivered events this exact garden state has survived unchanged —
+   * idempotency as a fact next to the hash it did not move, not two counters
+   * a person has to notice are related.
+   */
+  hashStableSince: { hash: string; duplicatesAtStart: bigint } | undefined;
+
   /** What the person has moved but not sent yet. Undefined means "no draft". */
   draft: Controls | undefined;
 
@@ -76,6 +85,7 @@ const initialState: GardenState = {
   telemetryHistory: [],
   summary: undefined,
   revision: undefined,
+  hashStableSince: undefined,
   draft: undefined,
   stream: { status: 'connecting', detail: undefined, handoverBreak: undefined },
   missedEvents: [],
@@ -109,22 +119,32 @@ export function reducer(state: GardenState, action: GardenAction): GardenState {
         run: action.run,
         telemetry: undefined,
         telemetryHistory: [],
+        hashStableSince: undefined,
         error: undefined,
       };
 
     case 'run/cleared':
       return { ...initialState };
 
-    case 'snapshot/received':
+    case 'snapshot/received': {
       // A snapshot carries run state as well as a garden, so the lifecycle on
       // screen follows the stream rather than waiting for the next REST poll.
+      const hashChanged = state.snapshot?.hash !== action.snapshot.hash;
       return {
         ...state,
         snapshot: action.snapshot,
         run: state.run
           ? { ...state.run, state: action.snapshot.state, tick: action.snapshot.tick }
           : state.run,
+        hashStableSince:
+          hashChanged || state.hashStableSince === undefined
+            ? {
+                hash: action.snapshot.hash,
+                duplicatesAtStart: state.telemetry?.processor?.duplicates ?? 0n,
+              }
+            : state.hashStableSince,
       };
+    }
 
     case 'telemetry/received':
       return {

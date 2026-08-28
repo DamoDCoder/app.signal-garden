@@ -14,7 +14,7 @@ import { num } from '../api/json.js';
 import { useGarden } from '../state/gardenStore.js';
 
 export function GardenView(): ReactNode {
-  const { snapshot } = useGarden();
+  const { snapshot, telemetry, hashStableSince } = useGarden();
 
   if (snapshot === undefined) {
     return (
@@ -26,6 +26,9 @@ export function GardenView(): ReactNode {
   }
 
   const stats = snapshot.stats;
+
+  const duplicatesAbsorbed =
+    (telemetry?.processor?.duplicates ?? 0n) - (hashStableSince?.duplicatesAtStart ?? 0n);
 
   return (
     <section className="panel garden-view">
@@ -59,6 +62,13 @@ export function GardenView(): ReactNode {
           is the claim this project is making, not as decoration. */}
       <p className="garden-hash" title="fingerprint of this garden">
         {snapshot.hash}
+        {duplicatesAbsorbed > 0n && (
+          <span className="hash-duplicates">
+            {' '}
+            · unchanged through {num(duplicatesAbsorbed)} duplicate{' '}
+            {duplicatesAbsorbed === 1n ? 'delivery' : 'deliveries'}
+          </span>
+        )}
       </p>
     </section>
   );

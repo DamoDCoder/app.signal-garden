@@ -77,15 +77,23 @@ records this client was given, and there is no honest way to render over that.
 
 ## What The Interface Still Owes M1
 
-The daemon's feedback plan asks, after M1: _does the UI make system pressure legible?_ The current
-panels are readable but static. What would answer the question:
+The daemon's feedback plan asks, after M1: _does the UI make system pressure legible?_ Three of the
+four gaps this raised are answered now:
 
-- A **pressure strip over time** rather than instantaneous counters — a rate needs a history to be
-  a rate.
-- **Duplicate delivery made visible in the garden's stillness**: the duplicate counter climbing
-  while the garden hash holds is the entire idempotency story in two numbers, and it currently
-  takes two panels to see.
+- **A pressure history, not just instantaneous counters.** `published`, `applied`, and
+  `uncommitted` each keep a 60-sample rolling window and plot it as a sparkline; `published` and
+  `applied` also show a rate. `uncommitted` is the one worth watching — its sparkline is the
+  sawtooth the daemon's docs promise, checkable rather than asserted.
+- **Duplicate delivery visible in the garden's stillness.** The hash line under the garden now
+  reads the count directly: `<hash> · unchanged through N duplicate deliveries`, computed from the
+  processor's duplicate count at the moment the current hash first appeared. The idempotency story
+  is one line instead of two panels a person has to notice are related.
+- **Tick-boundary latency**, next to the revision receipt: `revision N takes effect at tick T — 3
+  ticks away`, counting down as the stream's snapshots advance, then switching to `landed` once
+  `snapshot.revision` actually reaches `N` — not a guess from tick arithmetic alone, since a
+  snapshot's own revision is what the daemon says is in effect.
+
+Still open:
+
 - **Reconnect as a demonstrable act**: dropping the socket on purpose and watching the catch-up
   frame arrive, with the gap it covered stated in records rather than implied.
-- **Tick-boundary latency** shown as the distance between a control's `effective_tick` and the
-  garden actually changing.

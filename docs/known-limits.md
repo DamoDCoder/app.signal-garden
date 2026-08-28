@@ -42,22 +42,6 @@ daemon and a large message here.
 is not built from them — the snapshot behind the catch-up frame is authoritative — so dropping them
 loses a view of what was missed, never a piece of the garden.
 
-## No History In The Browser
-
-Counters are instantaneous. A rate needs a history to be a rate, and nothing here keeps one yet, so
-"200 events published" does not distinguish a steady trickle from a burst that has stopped. A
-rolling window over polled telemetry is the smallest fix and is on the roadmap for M3's panel.
-
-## One Run At A Time
-
-The interface watches one run. The daemon serves many, and a restart can bring several back at
-once, but there is no way here to list them: the contract has no `ListRuns`, so a person needs to
-know a run ID to attach to one.
-
-**What would fix it upstream:** a `ListRuns` method. It is a genuine addition to the contract rather
-than something the client can work around, and it is what a restarted daemon's runs need to become
-discoverable from a browser.
-
 ## No Reload Survival
 
 A reload is a new client. Nothing — not the run ID, not the offset — is kept in the browser, so a
