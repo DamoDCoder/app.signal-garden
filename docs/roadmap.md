@@ -18,18 +18,26 @@ now waiting on.
 all four gaps it raised (a pressure history, duplicate delivery in the garden's stillness,
 tick-boundary latency, and reconnect as a demonstrable act) are now answered.
 
-## M2: Event Backbone And Replay — _supported, not yet shown off_
+## M2: Event Backbone And Replay — _demonstrated, live-verified_
 
-The durable half is done in the daemon and this client speaks to it: it resumes from
-`folded_offset`, checks the handover, and survives a daemon restart mid-run.
+The three things this milestone asked of the browser — a deliberate disconnect so catch-up can be
+watched rather than inferred, the size of the gap a reconnect covered stated in records, and the
+garden hash held next to the duplicate counter — were built as part of M1's feedback question and
+are done. See [docs/ui.md](ui.md).
 
-What is missing is the _demonstration_. The M2 story — stop the consumer, create lag, restart,
-replay to the same state — is currently a terminal exercise. Making it a thing a person can do in
-the browser is the client's contribution to that milestone:
+Verifying them against a *real* outage (`docker compose stop garden`, not just a client-side socket
+drop) found a genuine daemon bug: shutting down closed every open projection stream with
+`CloseNormalClosure` / "run finished" — the same code and reason a run finishing sends — even though
+the run was mid-run and came right back on restart. A client reading the one thing a browser's
+`CloseEvent` reliably exposes, the close code, could not tell a restart from a real ending, and gave
+up instead of reconnecting. Fixed in the daemon: shutdown now closes with `CloseGoingAway` (1001),
+the standard code for "the server is leaving, not the resource," which the client's existing
+drop-and-reconnect path already handles correctly with no client change — 1001 is simply not 1000.
+`TestStreamClosesGoingAwayWhenTheRegistryShutsDown` is the regression.
 
-- a deliberate disconnect, so catch-up can be watched rather than inferred,
-- the size of the gap a reconnect covered, in records,
-- the garden hash held next to the duplicate counter, so idempotency is one glance.
+Live-verified end to end: started a run, stopped the daemon container mid-run, watched the client
+back off through `reconnecting` (250ms → 8s), restarted the daemon, watched it resume to `live` on
+its own tick — no button, no manual reconnect, the same path a dropped WiFi connection would take.
 
 ## M3: Failure And Performance Lab
 
