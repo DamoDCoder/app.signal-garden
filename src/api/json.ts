@@ -18,7 +18,7 @@
  */
 
 import { create } from '@bufbuild/protobuf';
-import { type Duration, DurationSchema } from '@bufbuild/protobuf/wkt';
+import { type Duration, DurationSchema, type Timestamp } from '@bufbuild/protobuf/wkt';
 
 /** For rendering only. Every quantity in this contract is far below 2^53. */
 export const num = (value: bigint): number => Number(value);
@@ -33,3 +33,9 @@ export const durationFromMillis = (millis: number): Duration =>
 /** Milliseconds from a Duration, for showing one. */
 export const millisFromDuration = (duration: Duration | undefined): number =>
   duration === undefined ? 0 : Number(duration.seconds) * 1000 + duration.nanos / 1_000_000;
+
+/** Milliseconds since the Unix epoch from a Timestamp, for dating a telemetry sample. */
+export const millisFromTimestamp = (timestamp: Timestamp | undefined): number | undefined =>
+  timestamp === undefined
+    ? undefined
+    : Number(timestamp.seconds) * 1000 + timestamp.nanos / 1_000_000;

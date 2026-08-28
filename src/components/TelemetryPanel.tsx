@@ -14,10 +14,12 @@
 
 import type { ReactNode } from 'react';
 import { millisFromDuration, num } from '../api/json.js';
+import { historyValues, ratePerSecond } from '../api/pressure.js';
 import { useGarden } from '../state/gardenStore.js';
+import { Sparkline } from './Sparkline.js';
 
 export function TelemetryPanel(): ReactNode {
-  const { telemetry } = useGarden();
+  const { telemetry, telemetryHistory } = useGarden();
 
   if (telemetry === undefined) {
     return (
@@ -31,18 +33,35 @@ export function TelemetryPanel(): ReactNode {
   const processor = telemetry.processor;
   const redeliverable = telemetry.logOffset - telemetry.committedOffset;
 
+  const publishedRate = ratePerSecond(telemetryHistory, (t) => t.published);
+  const appliedRate = ratePerSecond(telemetryHistory, (t) => t.processor?.applied ?? 0n);
+  const redeliverableHistory = historyValues(
+    telemetryHistory,
+    (t) => t.logOffset - t.committedOffset,
+  );
+
   return (
     <section className="panel telemetry">
       <h2>Pressure</h2>
 
       <dl className="telemetry-grid">
-        <Metric name="published" value={num(telemetry.published)} />
+        <PressureMetric
+          name="published"
+          value={num(telemetry.published)}
+          rate={publishedRate}
+          history={historyValues(telemetryHistory, (t) => t.published)}
+        />
         <Metric
           name="pending"
           value={num(telemetry.pending)}
           hint="events published, not yet processed"
         />
-        <Metric name="applied" value={processor ? num(processor.applied) : 0} />
+        <PressureMetric
+          name="applied"
+          value={processor ? num(processor.applied) : 0}
+          rate={appliedRate}
+          history={historyValues(telemetryHistory, (t) => t.processor?.applied ?? 0n)}
+        />
         <Metric
           name="duplicates"
           value={processor ? num(processor.duplicates) : 0}
@@ -50,10 +69,11 @@ export function TelemetryPanel(): ReactNode {
         />
         <Metric name="no effect" value={processor ? num(processor.noEffect) : 0} />
         <Metric name="rejected" value={processor ? num(processor.rejected) : 0} />
-        <Metric
+        <PressureMetric
           name="uncommitted"
           value={num(redeliverable)}
-          hint="records a restart would redeliver"
+          history={redeliverableHistory}
+          hint="records a restart would redeliver — climbs and drops in sawteeth by design, at snapshot cadence"
         />
         <Metric name="log offset" value={num(telemetry.logOffset)} />
         <Metric name="subscribers" value={telemetry.subscribers} />
@@ -80,6 +100,41 @@ export function TelemetryPanel(): ReactNode {
         </ul>
       )}
     </section>
+  );
+}
+
+function PressureMetric({
+  name,
+  value,
+  rate,
+  history,
+  hint,
+}: {
+  name: string;
+  value: number;
+  rate?: number | undefined;
+  history: number[];
+  hint?: string;
+}): ReactNode {
+  const spanSeconds = Math.min(history.length, 60);
+  const title =
+    (hint === undefined ? '' : `${hint} — `) +
+    `last ${spanSeconds}s: ${Math.min(...history, value)}–${Math.max(...history, value)}`;
+
+  return (
+    <div className="metric metric--pressure" title={title}>
+      <dt>{name}</dt>
+      <dd>
+        {value}
+        {rate !== undefined && (
+          <span className="metric-rate">
+            {rate >= 0 ? '+' : ''}
+            {rate.toFixed(1)}/s
+          </span>
+        )}
+      </dd>
+      <Sparkline values={history} />
+    </div>
   );
 }
 

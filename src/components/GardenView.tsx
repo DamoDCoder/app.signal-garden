@@ -49,6 +49,11 @@ export function GardenView(): ReactNode {
         ))}
       </ul>
 
+      <p className="organism-legend">
+        size = stage &nbsp;·&nbsp; colour = health &nbsp;·&nbsp; ring = moisture &nbsp;·&nbsp;{' '}
+        <span className="organism organism--legend-dead" /> dead
+      </p>
+
       {/* The hash is what makes replay checkable: two runs with the same seed
           and the same control ticks reach the same one. It is shown because it
           is the claim this project is making, not as decoration. */}

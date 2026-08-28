@@ -1,7 +1,7 @@
 {
   "name": "app-signal-garden",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React control surface for the Signal Garden engine.",
   "type": "module",
   "engines": {

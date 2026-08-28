@@ -70,11 +70,33 @@ body {
   border-radius: 3px;
 }
 
+.badge--running {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.badge--paused {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.badge--finished,
+.badge--unknown {
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
 .setup {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   padding-top: 1rem;
+}
+
+.setup-watch {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .dashboard {
@@ -269,6 +291,21 @@ legend {
   font-size: 1rem;
 }
 
+.metric--pressure {
+  min-width: 130px;
+}
+
+.metric-rate {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.sparkline {
+  display: block;
+  margin-top: 0.3rem;
+}
+
 .organisms {
   display: flex;
   flex-wrap: wrap;
@@ -295,6 +332,25 @@ legend {
 .organism[data-dead='true'] {
   background: var(--line);
   box-shadow: none;
+}
+
+.organism-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.organism-legend .organism {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+.organism--legend-dead {
+  background: var(--line);
 }
 
 .garden-hash {
@@ -329,6 +385,39 @@ legend {
 
 .event-feed li[data-type='rain'] .event-type {
   color: var(--blue);
+}
+
+.run-list-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.run-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.run-list-row:last-child {
+  border-bottom: none;
+}
+
+.run-list-id {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+}
+
+.run-list-tick {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+}
+
+.run-list-row button {
+  margin-left: auto;
 }
 
 .event-feed li[data-type='growth'] .event-type {

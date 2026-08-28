@@ -20,6 +20,7 @@ import { ErrorBanner } from './components/ErrorBanner.js';
 import { EventFeed } from './components/EventFeed.js';
 import { GardenView } from './components/GardenView.js';
 import { RunLauncher } from './components/RunLauncher.js';
+import { RunList } from './components/RunList.js';
 import { RunSummaryCard } from './components/RunSummaryCard.js';
 import { TelemetryPanel } from './components/TelemetryPanel.js';
 
@@ -67,7 +68,10 @@ export function App(): ReactNode {
       {runId === undefined ? (
         <main className="setup">
           <RunLauncher onStarted={setRunId} />
-          <AttachToRun onAttached={setRunId} />
+          <div className="setup-watch">
+            <RunList onAttached={setRunId} />
+            <AttachToRun onAttached={setRunId} />
+          </div>
         </main>
       ) : (
         <main className="dashboard">

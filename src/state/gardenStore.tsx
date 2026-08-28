@@ -36,10 +36,15 @@ import type {
 /** How many catch-up events the feed keeps. A gap can be thousands of records. */
 const eventFeedLimit = 200;
 
+/** How many polled telemetry samples the pressure history keeps, oldest first. */
+export const telemetryHistoryLimit = 60;
+
 export interface GardenState {
   run: Run | undefined;
   snapshot: GardenSnapshot | undefined;
   telemetry: TelemetrySnapshot | undefined;
+  /** Polled samples, oldest first, capped at telemetryHistoryLimit. One run's worth. */
+  telemetryHistory: TelemetrySnapshot[];
   summary: RunSummary | undefined;
 
   /** The last accepted control change, which names the tick it takes effect on. */
@@ -68,6 +73,7 @@ const initialState: GardenState = {
   run: undefined,
   snapshot: undefined,
   telemetry: undefined,
+  telemetryHistory: [],
   summary: undefined,
   revision: undefined,
   draft: undefined,
@@ -96,7 +102,15 @@ export type GardenAction =
 export function reducer(state: GardenState, action: GardenAction): GardenState {
   switch (action.type) {
     case 'run/loaded':
-      return { ...state, run: action.run, error: undefined };
+      // A fresh attach: the previous run's telemetry would otherwise linger and
+      // draw a history that spans two different gardens.
+      return {
+        ...state,
+        run: action.run,
+        telemetry: undefined,
+        telemetryHistory: [],
+        error: undefined,
+      };
 
     case 'run/cleared':
       return { ...initialState };
@@ -113,7 +127,13 @@ export function reducer(state: GardenState, action: GardenAction): GardenState {
       };
 
     case 'telemetry/received':
-      return { ...state, telemetry: action.telemetry };
+      return {
+        ...state,
+        telemetry: action.telemetry,
+        telemetryHistory: [...state.telemetryHistory, action.telemetry].slice(
+          -telemetryHistoryLimit,
+        ),
+      };
 
     case 'summary/received':
       return {
@@ -130,7 +150,27 @@ export function reducer(state: GardenState, action: GardenAction): GardenState {
     case 'controls/accepted':
       // The draft is cleared on acceptance, not on send: until the daemon
       // issues a revision, what the person moved is still only local intent.
-      return { ...state, revision: action.revision, draft: undefined };
+      //
+      // The revision's controls are folded into run.controls here rather than
+      // left for the next GetRun: this is not a guess at what the daemon will
+      // do, it is the daemon's own echo of what it just accepted. Without
+      // this, the effective controls fall back to the run's stale pre-edit
+      // value the moment the draft clears, and Apply looks like it reverted
+      // the sliders and did nothing — the change did land, at the tick the
+      // receipt names, but nothing on screen said so.
+      return {
+        ...state,
+        revision: action.revision,
+        draft: undefined,
+        run:
+          state.run && action.revision.controls
+            ? {
+                ...state.run,
+                controls: action.revision.controls,
+                revision: action.revision.revision,
+              }
+            : state.run,
+      };
 
     case 'stream/status':
       return {

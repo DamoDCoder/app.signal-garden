@@ -12,6 +12,10 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    // Docker Desktop's bind mount on macOS doesn't reliably forward fsevents
+    // into the container, so the native watcher misses edits. Polling costs
+    // nothing outside that setup and fixes it there.
+    watch: { usePolling: true },
   },
   test: {
     environment: 'jsdom',

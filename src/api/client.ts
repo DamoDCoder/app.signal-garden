@@ -30,6 +30,8 @@ import {
   ControlRevisionSchema,
   type GardenSnapshot,
   GardenSnapshotSchema,
+  type ListRunsResponse,
+  ListRunsResponseSchema,
   type Run,
   RunSchema,
   type RunSummary,
@@ -143,6 +145,13 @@ export const startRun = (options: StartRunOptions, signal?: AbortSignal): Promis
 
 export const getRun = (runId: string, signal?: AbortSignal): Promise<Run> =>
   request(`/v1/runs/${encodeURIComponent(runId)}`, RunSchema, signal ? { signal } : {});
+
+/**
+ * Every run the daemon currently has open — started here or recovered on
+ * restart. What makes a run discoverable without already knowing its ID.
+ */
+export const listRuns = (signal?: AbortSignal): Promise<ListRunsResponse> =>
+  request('/v1/runs', ListRunsResponseSchema, signal ? { signal } : {});
 
 /**
  * Stage a control change.
