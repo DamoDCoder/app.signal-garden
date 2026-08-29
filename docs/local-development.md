@@ -62,7 +62,7 @@ builds for an x86 machine instead — and a cross build deliberately does not mo
 
 | Port  | What                                                                            |
 | ----- | ------------------------------------------------------------------------------- |
-| 5173  | This client's dev server                                                        |
+| 5173  | This client — nginx-served static bundle under `task up`, Vite dev server under `task dev` |
 | 8080  | The daemon: generated REST routes, the projection stream, `/healthz`, `/readyz` |
 | 9090  | The daemon's gRPC listener, exposed so `grpcurl` works against a running stack  |
 | 9091  | Prometheus UI, `task observability:up` only — see below                         |

@@ -72,11 +72,20 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
   hashes at the same tick. What was missing was saying so: a line above the form now states the
   defaults are the demo, rather than leaving a returning visitor to notice a coincidence. No new
   mechanics — reusing the existing `.hint` style, not a new affordance.
+- **A production build rather than a dev server in Compose.** The `Dockerfile` is now two stages:
+  `node:22-alpine` runs the same `npm run build` a person runs, and `nginx:1.27-alpine` serves the
+  `dist/` bundle it produces. No bind mounts and no `npm run dev` in the stack — `task dev` stays
+  the inner loop. nginx listens on 5173 so every doc, the Playwright config, and the published URL
+  are unchanged; the container swap underneath is invisible. `VITE_SIGNAL_GARDEN_HTTP` moved from a
+  runtime `environment` value to a `build.args` value, because Vite bakes it into the bundle — the
+  browser downloads a fixed daemon address, and changing it means `docker compose up --build`. A
+  `.dockerignore` keeps the host `node_modules` and prior `dist/` out of the build context.
+  Verified: image builds offline, `/` and a deep link both serve `index.html`, hashed assets come
+  back `immutable`, and the `http://localhost:8080` default is present in the shipped JS.
 
 **Still open:**
 
 - Garden interactions worth watching for five minutes.
-- A production build rather than a dev server in Compose.
 - A genuinely clean _machine_ — this repo's setup has only been run on machines that already had
   the toolchain installed.
 - Pre-configured Prometheus and Jaeger dashboards for `compose.observability.yaml` — provisioned so

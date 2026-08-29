@@ -40,20 +40,19 @@ services:
     # a plain `docker run` too rather than only inside this file.
 
   web:
-    # Built from this repository, because this is where its source is.
+    # Built from this repository, because this is where its source is. A static
+    # bundle behind nginx — see the Dockerfile. No bind mounts: there is nothing
+    # to hot-reload. `task dev` is the inner loop.
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Vite bakes this into the bundle at build time. The browser resolves
+        # it, not the container, so it is the published host port rather than
+        # the compose service name. Changing it needs `up --build`.
+        VITE_SIGNAL_GARDEN_HTTP: ${VITE_SIGNAL_GARDEN_HTTP:-http://localhost:8080}
     ports:
       - '5173:5173'
-    environment:
-      # The browser resolves this, not the container, so it is the published
-      # host port rather than the compose service name.
-      VITE_SIGNAL_GARDEN_HTTP: ${VITE_SIGNAL_GARDEN_HTTP:-http://localhost:8080}
-    volumes:
-      - ./src:/app/src
-      - ./index.html:/app/index.html
-      - ./vite.config.ts:/app/vite.config.ts
     depends_on:
       garden:
         condition: service_healthy

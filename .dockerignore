@@ -1,0 +1,13 @@
+# The build stage runs `npm ci` and `npm run build` from a clean copy — a host
+# node_modules (built for a different platform) and prior build output would
+# only get in the way.
+node_modules
+dist
+coverage
+.vite
+test-results
+playwright-report
+.git
+.env
+.env.*
+!.env.example
