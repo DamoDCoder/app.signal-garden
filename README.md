@@ -10,13 +10,19 @@ browser, and the Compose file that runs both.
 
 ## Status
 
-**M1 done; M2 demonstrated and live-verified.** Wired to the contract at `v0.8.1`. A run can be
-started, steered, paused, and finished from the browser; pressure history, duplicate-delivery
-visibility, tick-boundary latency, and reconnect are all built and shown, not just rendered as
-tables. `docker compose up` starts the local stack clean, and `docker compose stop` against a live
-run and back is a verified path: the client backs off through `reconnecting` and resumes to `live`
-on its own once the daemon returns. See [docs/roadmap.md](docs/roadmap.md) for the exit-criteria
-record and [docs/ui.md](docs/ui.md) for what each panel does.
+**M1 done; M2 demonstrated and live-verified; M3's client-repo items done.** Wired to the contract
+at `v0.13.0`. A run can be started, steered, paused, and finished from the browser; pressure
+history, duplicate-delivery visibility, tick-boundary latency, and reconnect are all built and
+shown, not just rendered as tables. `docker compose up` starts the local stack clean, and
+`docker compose stop` against a live run and back is a verified path: the client backs off through
+`reconnecting` and resumes to `live` on its own once the daemon returns.
+
+The Controls panel has three more sliders — `worker count`, `batch size`, `fail snapshot every` —
+live-tunable the same way the original four are, and the Pressure panel shows the two counters they
+feed: `snapshot save retries`/`snapshot save failures`. `compose.observability.yaml`
+(`task observability:up`) brings up Prometheus and Jaeger alongside the stack to see both live,
+without either being required to run it. See [docs/roadmap.md](docs/roadmap.md) for the
+exit-criteria record and [docs/ui.md](docs/ui.md) for what each panel does.
 
 The daemon's half of M1 was done first: a run can start, take control changes, pause, and finish
 over generated REST routes, and a projection stream delivers a frame per tick that a client can
@@ -73,7 +79,7 @@ it in a browser.
 Bumping the daemon is two steps and one review:
 
 ```sh
-echo v0.8.1 > CONTRACT
+echo v0.13.0 > CONTRACT
 task contract        # re-vendors and regenerates; the diff in src/gen is the contract change
 ```
 

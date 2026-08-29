@@ -36,7 +36,7 @@ the annotations file, and leaving it out fails at module resolution rather than 
 ## Bumping The Daemon
 
 ```sh
-echo v0.8.1 > CONTRACT
+echo v0.13.0 > CONTRACT
 task contract
 task check
 ```
