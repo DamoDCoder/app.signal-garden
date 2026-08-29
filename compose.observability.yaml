@@ -1,13 +1,19 @@
-# Prometheus and Jaeger, as an overlay on compose.yaml — not folded into it.
+# Prometheus, Jaeger, and a Grafana that opens straight onto a built dashboard,
+# as an overlay on compose.yaml — not folded into it.
 #
-# Neither is needed to run the stack: `curl localhost:8080/metrics` already
-# answers Prometheus's own scrape format with no server of its own, and
-# tracing is off by default (docs/decisions/0016, 0019 in the daemon repo).
-# This file exists for the demo where a browsable dashboard and a trace
-# waterfall are worth more than curl — bring it up alongside the main stack:
+# Neither Prometheus nor tracing is needed to run the stack: `curl
+# localhost:8080/metrics` already answers Prometheus's own scrape format with no
+# server of its own, and tracing is off by default (docs/decisions/0016, 0019 in
+# the daemon repo). This file exists for the demo where a browsable dashboard
+# and a trace waterfall are worth more than curl — bring it up alongside the
+# main stack:
 #
 #   docker compose -f compose.yaml -f compose.observability.yaml up
 #   task observability:up   # the same thing, via Taskfile.yml
+#
+# Then open http://localhost:3000 — Grafana, no login, on the Signal Garden
+# dashboard. http://localhost:9091 and http://localhost:16686 are still there
+# for a raw query box and the trace search.
 #
 # It joins the same default network compose.yaml's services do, so
 # `garden:8080` and `jaeger:4317` resolve by service name the way `web`
@@ -41,3 +47,32 @@ services:
     ports:
       - '16686:16686' # UI
       - '4317:4317' # OTLP/gRPC — SIGNAL_GARDEN_OTEL_ENDPOINT points here
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    environment:
+      # A demo tool on a laptop: no login wall, and Admin so the dashboard is
+      # explorable rather than read-only behind a viewer role.
+      GF_AUTH_ANONYMOUS_ENABLED: 'true'
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: 'true'
+      GF_AUTH_BASIC_ENABLED: 'false'
+      # Land on the provisioned dashboard, not the empty home screen.
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/signal-garden.json
+      # Nothing here should phone home from a demo.
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+      GF_NEWS_NEWS_FEED_ENABLED: 'false'
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+    # No named volume, same reason as prometheus: the datasources and dashboard
+    # are provisioned from files on every start, so there is no state worth
+    # keeping between runs.
+    depends_on:
+      prometheus:
+        condition: service_started
+      jaeger:
+        condition: service_started

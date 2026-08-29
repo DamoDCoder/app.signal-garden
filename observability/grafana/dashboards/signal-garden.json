@@ -1,0 +1,452 @@
+{
+  "uid": "signal-garden",
+  "title": "Signal Garden",
+  "description": "The daemon's /metrics surface and its trace stream, on one page. Provisioned; edits here are overwritten on restart.",
+  "tags": ["signal-garden"],
+  "editable": false,
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Events / sec",
+      "description": "signal_garden_events_processed_total, all outcomes, rate over 1m.",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(signal_garden_events_processed_total[1m]))",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Pending events",
+      "description": "signal_garden_pending_events — records appended but not yet folded, summed across live runs. Consumer lag.",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "signal_garden_pending_events",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "WebSocket freshness",
+      "description": "time() minus signal_garden_last_publish_timestamp_seconds — seconds since the last projection frame went to any subscriber. 'No data' until a client connects the stream, since nothing has been published yet.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - (signal_garden_last_publish_timestamp_seconds != 0)",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 30 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Snapshot save failures (5m)",
+      "description": "increase(signal_garden_snapshot_save_failures_total[5m]) — periodic on-disk save gave up after exhausting retries.",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "increase(signal_garden_snapshot_save_failures_total[5m])",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Events processed by outcome",
+      "description": "sum by (outcome) (rate(signal_garden_events_processed_total[1m])). Outcomes: applied, rejected, duplicate, unknown_entity, no_effect.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (outcome) (rate(signal_garden_events_processed_total[1m]))",
+          "legendFormat": "{{outcome}}",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 15,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "mode": "normal", "group": "A" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "lastNotNull"] }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Pending events",
+      "description": "signal_garden_pending_events over time.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "signal_garden_pending_events",
+          "legendFormat": "pending",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 15,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["max", "lastNotNull"] }
+      }
+    },
+
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Tick duration",
+      "description": "histogram_quantile over signal_garden_tick_duration_seconds_bucket, 1m rate. Wall-clock time to advance one run one tick.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(signal_garden_tick_duration_seconds_bucket[1m])))",
+          "legendFormat": "p50",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(signal_garden_tick_duration_seconds_bucket[1m])))",
+          "legendFormat": "p95",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(signal_garden_tick_duration_seconds_bucket[1m])))",
+          "legendFormat": "p99",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "RPC rate by method",
+      "description": "sum by (method) (rate(signal_garden_rpc_duration_seconds_count[1m])). Covers REST too — the gateway dials gRPC over loopback.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (method) (rate(signal_garden_rpc_duration_seconds_count[1m]))",
+          "legendFormat": "{{method}}",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] }
+      }
+    },
+
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "RPC p95 by method",
+      "description": "histogram_quantile(0.95, sum by (le, method) (rate(signal_garden_rpc_duration_seconds_bucket[1m]))).",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, method) (rate(signal_garden_rpc_duration_seconds_bucket[1m])))",
+          "legendFormat": "{{method}}",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 5,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "RPC non-OK responses by code",
+      "description": "sum by (code) (rate(signal_garden_rpc_duration_seconds_count{code!=\"OK\"}[1m])).",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (code) (rate(signal_garden_rpc_duration_seconds_count{code!=\"OK\"}[1m]))",
+          "legendFormat": "{{code}}",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 15,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] }
+      }
+    },
+
+    {
+      "id": 40,
+      "type": "timeseries",
+      "title": "Snapshot save retries & dropped frames",
+      "description": "rate(signal_garden_snapshot_save_retries_total[5m]) and rate(signal_garden_snapshots_dropped_total[5m]).",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(signal_garden_snapshot_save_retries_total[5m])",
+          "legendFormat": "save retries",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        },
+        {
+          "refId": "B",
+          "expr": "rate(signal_garden_snapshots_dropped_total[5m])",
+          "legendFormat": "frames dropped (full subscriber)",
+          "range": true,
+          "datasource": { "type": "prometheus", "uid": "signalgarden-prometheus" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 41,
+      "type": "traces",
+      "title": "Recent traces — signalgardend",
+      "description": "Jaeger search for the daemon's spans. Tracing is only on under this overlay (SIGNAL_GARDEN_OTEL_ENDPOINT is set here).",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "datasource": { "type": "jaeger", "uid": "signalgarden-jaeger" },
+      "targets": [
+        {
+          "refId": "A",
+          "queryType": "search",
+          "service": "signalgardend",
+          "limit": 20,
+          "datasource": { "type": "jaeger", "uid": "signalgarden-jaeger" }
+        }
+      ],
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {}
+    }
+  ]
+}

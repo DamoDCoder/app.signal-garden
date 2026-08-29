@@ -1,0 +1,29 @@
+# Wired to the two services compose.observability.yaml starts, by their
+# in-network names and container ports (not the published host ports).
+#
+# Grafana reads this once at startup. `deleteDatasources` keeps a rename here
+# from leaving the old entry behind in a reused volume — though this stack has
+# no named volume for Grafana, so it starts clean every time anyway.
+apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+  - name: Jaeger
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: signalgarden-prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    jsonData:
+      # Matches prometheus.yml's scrape_interval, so range steps line up with
+      # the data actually recorded.
+      timeInterval: 5s
+
+  - name: Jaeger
+    type: jaeger
+    uid: signalgarden-jaeger
+    access: proxy
+    url: http://jaeger:16686

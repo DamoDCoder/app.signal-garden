@@ -96,7 +96,7 @@ tasks:
       - docker compose down
 
   observability:up:
-    desc: 'Start the stack plus Prometheus (:9091) and Jaeger (:16686) — see compose.observability.yaml'
+    desc: 'Start the stack plus Grafana (:3000, built dashboard), Prometheus (:9091), and Jaeger (:16686) — see compose.observability.yaml'
     env:
       SIGNAL_GARDEN_IMAGE: '{{.IMAGE | default .DAEMON_IMAGE}}'
       SIGNAL_GARDEN_IMAGE_TAG: '{{.TAG | default .DAEMON_TAG}}'

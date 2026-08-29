@@ -1,0 +1,13 @@
+# Loads every dashboard JSON under the mounted directory at startup and on a
+# 10s poll. `foldersFromFilesStructure` is off — there is one dashboard.
+apiVersion: 1
+
+providers:
+  - name: signal-garden
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 10
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: false

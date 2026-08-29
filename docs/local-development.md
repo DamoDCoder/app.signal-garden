@@ -60,14 +60,15 @@ builds for an x86 machine instead — and a cross build deliberately does not mo
 
 ## Ports
 
-| Port  | What                                                                            |
-| ----- | ------------------------------------------------------------------------------- |
+| Port  | What                                                                                       |
+| ----- | ------------------------------------------------------------------------------------------ |
 | 5173  | This client — nginx-served static bundle under `task up`, Vite dev server under `task dev` |
-| 8080  | The daemon: generated REST routes, the projection stream, `/healthz`, `/readyz` |
-| 9090  | The daemon's gRPC listener, exposed so `grpcurl` works against a running stack  |
-| 9091  | Prometheus UI, `task observability:up` only — see below                         |
-| 16686 | Jaeger UI, `task observability:up` only                                         |
-| 4317  | Jaeger's OTLP/gRPC receiver, `task observability:up` only                       |
+| 8080  | The daemon: generated REST routes, the projection stream, `/healthz`, `/readyz`            |
+| 9090  | The daemon's gRPC listener, exposed so `grpcurl` works against a running stack             |
+| 3000  | Grafana, `task observability:up` only — opens on the Signal Garden dashboard, see below    |
+| 9091  | Prometheus UI, `task observability:up` only                                                |
+| 16686 | Jaeger UI, `task observability:up` only                                                    |
+| 4317  | Jaeger's OTLP/gRPC receiver, `task observability:up` only                                  |
 
 ## Prometheus And Traces
 
@@ -79,14 +80,20 @@ in the daemon repository. `compose.observability.yaml` is for the demo where a d
 waterfall are worth more than `curl`:
 
 ```sh
-task observability:up      # everything task up starts, plus Prometheus and Jaeger
+task observability:up      # everything task up starts, plus Grafana, Prometheus, and Jaeger
 ```
 
 It is an overlay (`docker compose -f compose.yaml -f compose.observability.yaml up`), not a second
-stack — the same `garden`/`web` services, joined by `prometheus` and `jaeger` on the same network,
-with `SIGNAL_GARDEN_OTEL_ENDPOINT` pointed at `jaeger:4317` only in this file. Open
-`http://localhost:9091` for Prometheus (`signal_garden_events_processed_total`,
-`signal_garden_pending_events`, and the rest of `/metrics`, queryable and graphable) and
+stack — the same `garden`/`web` services, joined by `grafana`, `prometheus`, and `jaeger` on the
+same network, with `SIGNAL_GARDEN_OTEL_ENDPOINT` pointed at `jaeger:4317` only in this file.
+
+Open **`http://localhost:3000`** — Grafana, no login, on a provisioned **Signal Garden** dashboard:
+event rate by outcome, pending-events lag, tick-duration quantiles, RPC rate and p95 by method, RPC
+errors, WebSocket freshness, snapshot save retries and failures, and a Jaeger traces panel. The two
+datasources and the dashboard are files under `observability/grafana/` — nothing is clicked to set
+it up, and edits in the UI are overwritten on restart.
+
+The raw tools are still published: `http://localhost:9091` for Prometheus's own query box, and
 `http://localhost:16686` for Jaeger — start a run, and both a `StartRun` RPC span and a `tick` span
 per tick appear under the `signalgardend` service. `task observability:down` stops it.
 

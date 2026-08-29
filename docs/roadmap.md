@@ -83,13 +83,25 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
   Verified: image builds offline, `/` and a deep link both serve `index.html`, hashed assets come
   back `immutable`, and the `http://localhost:8080` default is present in the shipped JS.
 
+- **Pre-configured dashboards for `compose.observability.yaml`.** `task observability:up` now also
+  starts Grafana on `:3000` — no login, opening straight onto a provisioned **Signal Garden**
+  dashboard rather than an empty query box. Prometheus's own UI has no saved-dashboard concept and
+  Jaeger's is trace search only, so Grafana is the piece that makes "opens into a built dashboard"
+  real. Two datasources (Prometheus, Jaeger) and one dashboard JSON live under
+  `observability/grafana/` and are file-provisioned; nothing is clicked to wire them, and UI edits
+  are overwritten on restart. Panels cover the daemon's whole `/metrics` surface — event rate by
+  outcome, pending-events lag, tick-duration p50/p95/p99, RPC rate and p95 by method, non-OK RPC
+  responses, WebSocket freshness, snapshot save retries and failures — plus a Jaeger traces panel
+  for `signalgardend`. Verified end to end against a live run: datasources resolve over the compose
+  network, every Prometheus panel returns real series, and the traces panel lists spans. The raw
+  `:9091` and `:16686` UIs are still published for a query box and trace search. No named volume,
+  same as `prometheus` — it is a demo tool, provisioned fresh each start.
+
 **Still open:**
 
 - Garden interactions worth watching for five minutes.
 - A genuinely clean _machine_ — this repo's setup has only been run on machines that already had
   the toolchain installed.
-- Pre-configured Prometheus and Jaeger dashboards for `compose.observability.yaml` — provisioned so
-  `task observability:up` opens straight into a built dashboard rather than an empty query box.
 
 ## Not Planned Here
 
