@@ -10,17 +10,17 @@ browser, and the Compose file that runs both.
 
 ## Status
 
-**M1's feedback question answered; M2 demonstrated and live-verified.** Wired to the contract at
-`v0.8.1`. A run can be started, steered, paused, and finished from the browser; pressure history,
-duplicate-delivery visibility, tick-boundary latency, and reconnect are all built and shown, not
-just rendered as tables. `docker compose stop` against a live run and back is a verified path: the
-client backs off through `reconnecting` and resumes to `live` on its own once the daemon returns.
-See [docs/roadmap.md](docs/roadmap.md) for what M1's remaining exit criteria still want and
-[docs/ui.md](docs/ui.md) for what each panel does.
+**M1 done; M2 demonstrated and live-verified.** Wired to the contract at `v0.8.1`. A run can be
+started, steered, paused, and finished from the browser; pressure history, duplicate-delivery
+visibility, tick-boundary latency, and reconnect are all built and shown, not just rendered as
+tables. `docker compose up` starts the local stack clean, and `docker compose stop` against a live
+run and back is a verified path: the client backs off through `reconnecting` and resumes to `live`
+on its own once the daemon returns. See [docs/roadmap.md](docs/roadmap.md) for the exit-criteria
+record and [docs/ui.md](docs/ui.md) for what each panel does.
 
-The daemon's half of M1 is done: a run can start, take control changes, pause, and finish over
-generated REST routes, and a projection stream delivers a frame per tick that a client can resume
-from a log offset.
+The daemon's half of M1 was done first: a run can start, take control changes, pause, and finish
+over generated REST routes, and a projection stream delivers a frame per tick that a client can
+resume from a log offset.
 
 ## What This Repository Is For
 
