@@ -63,6 +63,8 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
   checkable on screen.
 - A production build rather than a dev server in Compose.
 - The setup path verified from a clean machine.
+- Pre-configured Prometheus and Jaeger dashboards for `compose.observability.yaml` — provisioned so
+  `task observability:up` opens straight into a built dashboard rather than an empty query box.
 
 ## Not Planned Here
 
