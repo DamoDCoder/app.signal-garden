@@ -11,7 +11,7 @@
 import type { ReactNode } from 'react';
 import { create } from '@bufbuild/protobuf';
 import { ControlsSchema, RunState } from '../gen/signal/garden/v1/garden_pb.js';
-import { maxEventsPerTick, whyInvalid } from '../api/limits.js';
+import { maxBatchSize, maxEventsPerTick, maxWorkerCount, whyInvalid } from '../api/limits.js';
 import { num } from '../api/json.js';
 import { useRunCommands } from '../hooks/useRunCommands.js';
 import { useEffectiveControls, useGarden, useGardenDispatch } from '../state/gardenStore.js';
@@ -65,6 +65,30 @@ export function ControlPanel(): ReactNode {
         name="pest"
         value={controls.pestWeight}
         onChange={(pestWeight) => edit({ pestWeight })}
+      />
+      <ControlSlider
+        name="worker count"
+        min={0}
+        max={maxWorkerCount}
+        value={controls.workerCount}
+        hint="worker_count × batch_size caps how many records one tick folds; 0 is unbounded"
+        onChange={(workerCount) => edit({ workerCount })}
+      />
+      <ControlSlider
+        name="batch size"
+        min={0}
+        max={maxBatchSize}
+        value={controls.batchSize}
+        hint="the other half of the capacity cap; 0 is unbounded"
+        onChange={(batchSize) => edit({ batchSize })}
+      />
+      <ControlSlider
+        name="fail snapshot every"
+        min={0}
+        max={20}
+        value={controls.failSnapshotEvery}
+        hint="every Nth periodic on-disk save fails its first attempt and retries; 0 is off"
+        onChange={(failSnapshotEvery) => edit({ failSnapshotEvery })}
       />
 
       {invalid !== undefined && <p className="invalid">{invalid}</p>}

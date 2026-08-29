@@ -24,7 +24,7 @@ watched rather than inferred, the size of the gap a reconnect covered stated in 
 garden hash held next to the duplicate counter — were built as part of M1's feedback question and
 are done. See [docs/ui.md](ui.md).
 
-Verifying them against a *real* outage (`docker compose stop garden`, not just a client-side socket
+Verifying them against a _real_ outage (`docker compose stop garden`, not just a client-side socket
 drop) found a genuine daemon bug: shutting down closed every open projection stream with
 `CloseNormalClosure` / "run finished" — the same code and reason a run finishing sends — even though
 the run was mid-run and came right back on restart. A client reading the one thing a browser's
@@ -38,14 +38,23 @@ Live-verified end to end: started a run, stopped the daemon container mid-run, w
 back off through `reconnecting` (250ms → 8s), restarted the daemon, watched it resume to `live` on
 its own tick — no button, no manual reconnect, the same path a dropped WiFi connection would take.
 
-## M3: Failure And Performance Lab
+## M3: Failure And Performance Lab — _client half done_
 
-- A pressure history: throughput, lag, and freshness over a rolling window rather than as totals.
-- Latency histograms once the daemon emits them, and telemetry over the stream once it is worth
-  pushing.
-- Worker count and batch size become real controls in the contract at M3; the control panel takes
-  them as new sliders.
-- Failure injection as a control surface, in the same spirit as `duplicate_every`.
+**Done:**
+
+- A pressure history: throughput, lag, and freshness over a rolling window rather than as totals —
+  built as part of M1's feedback question, above.
+- Worker count and batch size are real controls at `CONTRACT` `v0.13.0`; the Controls panel takes
+  them as new sliders, live-tunable mid-run the same way every other control is.
+- Failure injection as a control surface, in the same spirit as `duplicate_every`:
+  `fail_snapshot_every` is a slider in the Controls panel, and `snapshot_save_retries`/
+  `snapshot_save_failures` are visible in the Pressure panel.
+
+**Exit criteria still open:**
+
+- Latency histograms once the daemon emits them over `GetTelemetry` — it doesn't yet; Prometheus
+  `/metrics` is the daemon's only latency surface so far, and this client doesn't poll that.
+- Telemetry over the stream, once it's worth pushing rather than polling.
 
 ## M4: Showcase Release
 

@@ -22,8 +22,10 @@ test('start a run, steer it, and finish it', async ({ page }) => {
   const firstTick = await page.getByTestId('garden-tick').textContent();
   await expect(page.getByTestId('garden-tick')).not.toHaveText(firstTick ?? '');
 
-  // A control change is staged and reports the tick it lands on.
-  await page.getByLabel('pest').fill('5');
+  // A control change is staged and reports the tick it lands on. The slider
+  // role, not getByLabel: the label also wraps an <output> announcing the
+  // current value, which shares the same accessible name.
+  await page.getByRole('slider', { name: 'pest' }).fill('5');
   await page.getByRole('button', { name: 'Apply change' }).click();
   await expect(page.getByText(/takes effect at tick/)).toBeVisible();
 

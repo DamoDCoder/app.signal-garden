@@ -52,6 +52,12 @@ is the delay the system promised rather than a bug they have to explain to thems
 The Apply button stays inert until something has actually moved. A draft is local intent; it is
 cleared when the receipt arrives, not when the request is sent.
 
+M3 added three sliders past the original four: `worker count` and `batch size` together cap how
+many records one tick folds — `0` on either is unbounded, the behavior before the pair existed —
+and `fail snapshot every` makes the daemon's periodic on-disk save fail its first attempt and retry
+every Nth time, `0` off. All three are live-tunable the same way rain/growth/pest are; there is
+nothing special about them mechanically, only what they mean.
+
 ### Pressure
 
 The number worth watching is the gap between `log_offset` and `committed_offset`: it is what a
@@ -60,8 +66,17 @@ snapshot cadence rather than per tick, so it climbs and drops in sawteeth **by d
 that made that look like a fault would be lying about a healthy system.
 
 `pending` is consumer lag, and it is zero while the processor drains inside the tick that produced
-the events. It becomes interesting at M3, when the consumer can genuinely fall behind. Showing it
-at zero now is honest; hiding it until it moves would mean nobody knows what changed when it does.
+the events. It genuinely moves now: set `worker count`/`batch size` below `events per tick` in the
+Controls panel and `pending` climbs, capacity below production building a real backlog rather than
+a synthetic one. Showing it at zero the rest of the time is honest; hiding it until it moves would
+mean nobody knows what changed when it does.
+
+`snapshot save retries`/`snapshot save failures` are the on-disk save's own counters — not the
+`frames dropped` above them, which are WebSocket `GardenSnapshot` frames a slow subscriber never
+received. Set `fail snapshot every` in the Controls panel and `retries` climbs by one at every
+snapshot-cadence tick; `failures` stays at zero, because the injected failure only ever occupies the
+save's first attempt — the point being demonstrated is a transient failure that recovers, not one
+that doesn't.
 
 ### Connection
 
@@ -89,7 +104,7 @@ this raised are answered:
   processor's duplicate count at the moment the current hash first appeared. The idempotency story
   is one line instead of two panels a person has to notice are related.
 - **Tick-boundary latency**, next to the revision receipt: `revision N takes effect at tick T — 3
-  ticks away`, counting down as the stream's snapshots advance, then switching to `landed` once
+ticks away`, counting down as the stream's snapshots advance, then switching to `landed` once
   `snapshot.revision` actually reaches `N` — not a guess from tick arithmetic alone, since a
   snapshot's own revision is what the daemon says is in effect.
 - **Reconnect as a demonstrable act.** A "Drop connection" button next to the connection status,

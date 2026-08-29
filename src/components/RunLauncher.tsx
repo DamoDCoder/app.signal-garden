@@ -161,6 +161,7 @@ interface ControlSliderProps {
   value: number;
   min?: number;
   max?: number;
+  hint?: string;
   onChange: (value: number) => void;
 }
 
@@ -169,6 +170,7 @@ export function ControlSlider({
   value,
   min = 0,
   max = 10,
+  hint,
   onChange,
 }: ControlSliderProps): ReactNode {
   return (
@@ -176,6 +178,7 @@ export function ControlSlider({
       <span>
         {name} <output>{value}</output>
       </span>
+      {hint !== undefined && <small>{hint}</small>}
       <input
         type="range"
         aria-label={name}

@@ -82,6 +82,16 @@ export function TelemetryPanel(): ReactNode {
           value={num(telemetry.snapshotsDropped)}
           hint="snapshots a slow subscriber never received"
         />
+        <Metric
+          name="snapshot save retries"
+          value={num(telemetry.snapshotSaveRetries)}
+          hint="retries of the periodic on-disk save — not the WebSocket frames above"
+        />
+        <Metric
+          name="snapshot save failures"
+          value={num(telemetry.snapshotSaveFailures)}
+          hint="times the on-disk save exhausted its retries and gave up"
+        />
         <Metric name="tick pace" value={`${millisFromDuration(telemetry.tickInterval)}ms`} />
         <Metric
           name="uptime"
