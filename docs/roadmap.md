@@ -11,8 +11,12 @@ now waiting on.
 
 - `docker compose up` starts the local stack. _(Compose is written; it needs a run through on a
   clean machine.)_
+
+**Done:**
+
 - A run can start, update controls, pause, and finish, from the browser.
-- Browser tests cover the primary journey.
+- Browser tests cover the primary journey. [tests/e2e/primary-journey.spec.ts](../tests/e2e/primary-journey.spec.ts)
+  starts a run, steers it, and finishes it.
 
 **Feedback question:** _does the UI make system pressure legible?_ [docs/ui.md](ui.md) tracks this —
 all four gaps it raised (a pressure history, duplicate delivery in the garden's stillness,

@@ -10,11 +10,13 @@ browser, and the Compose file that runs both.
 
 ## Status
 
-**Scaffolded, not yet implemented.** The transport layer, the store, and the panel skeletons are
-here and wired to the contract at `v0.8.0`. What is deliberately thin is the interface itself: the
-components render real data and are laid out, but the garden is circles and the panels are
-tables. That is M1's remaining work, and it is the point of the repository rather than a detail of
-it.
+**M1's feedback question answered; M2 demonstrated and live-verified.** Wired to the contract at
+`v0.8.1`. A run can be started, steered, paused, and finished from the browser; pressure history,
+duplicate-delivery visibility, tick-boundary latency, and reconnect are all built and shown, not
+just rendered as tables. `docker compose stop` against a live run and back is a verified path: the
+client backs off through `reconnecting` and resumes to `live` on its own once the daemon returns.
+See [docs/roadmap.md](docs/roadmap.md) for what M1's remaining exit criteria still want and
+[docs/ui.md](docs/ui.md) for what each panel does.
 
 The daemon's half of M1 is done: a run can start, take control changes, pause, and finish over
 generated REST routes, and a projection stream delivers a frame per tick that a client can resume
@@ -71,7 +73,7 @@ it in a browser.
 Bumping the daemon is two steps and one review:
 
 ```sh
-echo v0.8.0 > CONTRACT
+echo v0.8.1 > CONTRACT
 task contract        # re-vendors and regenerates; the diff in src/gen is the contract change
 ```
 
