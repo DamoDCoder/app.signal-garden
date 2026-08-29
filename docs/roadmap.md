@@ -97,9 +97,21 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
   `:9091` and `:16686` UIs are still published for a query box and trace search. No named volume,
   same as `prometheus` — it is a demo tool, provisioned fresh each start.
 
+- **Garden interactions worth watching for five minutes.** [`docs/demo.md`](demo.md) — the _viewing_
+  script, companion to the daemon repo's _proof_ script. One run of seed `42`, whose garden has a
+  shape of its own (grows fast through tick ~200, then dies to attrition, `total_stage` 92 of 100),
+  with every system property turned on deliberately along the way and watched land on a panel:
+  `duplicate_every` ambient from tick 0, a capacity choke that ramps `pending` into the tens of
+  thousands and an unbounded relief that collapses it in one tick, `fail_snapshot_every` stepping
+  `snapshot save retries` while failures stay flat, a connection drop that resumes unattended, and
+  the finish scorecard whose chain digest matches `task run -- -seed 42` offline. Every beat's
+  numbers were captured from a live run against the observability stack — the choke ramp, the
+  one-tick drain, the retry cadence, the final counters are measured, not projected. Monitoring is
+  half the script: each beat names what to watch on the Grafana dashboard and, for the last one,
+  Jaeger.
+
 **Still open:**
 
-- Garden interactions worth watching for five minutes.
 - A genuinely clean _machine_ — this repo's setup has only been run on machines that already had
   the toolchain installed.
 

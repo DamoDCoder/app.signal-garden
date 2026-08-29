@@ -20,9 +20,13 @@ shown, not just rendered as tables. `docker compose up` starts the local stack c
 The Controls panel has three more sliders — `worker count`, `batch size`, `fail snapshot every` —
 live-tunable the same way the original four are, and the Pressure panel shows the two counters they
 feed: `snapshot save retries`/`snapshot save failures`. `compose.observability.yaml`
-(`task observability:up`) brings up Prometheus and Jaeger alongside the stack to see both live,
-without either being required to run it. See [docs/roadmap.md](docs/roadmap.md) for the
-exit-criteria record and [docs/ui.md](docs/ui.md) for what each panel does.
+(`task observability:up`) brings up Grafana — no login, on a provisioned dashboard — alongside
+Prometheus and Jaeger, without any of them being required to run the stack.
+
+M4 is underway: Compose now serves a production nginx build rather than the Vite dev server, the
+observability overlay ships a built dashboard, and [docs/demo.md](docs/demo.md) is the five-minute
+viewing script. See [docs/roadmap.md](docs/roadmap.md) for the exit-criteria record and
+[docs/ui.md](docs/ui.md) for what each panel does.
 
 The daemon's half of M1 was done first: a run can start, take control changes, pause, and finish
 over generated REST routes, and a projection stream delivers a frame per tick that a client can
@@ -121,6 +125,7 @@ received, and the interface says so instead of rendering over it.
 - [Architecture](docs/architecture.md): the layers here and what each is not allowed to do.
 - [The contract](docs/contract.md): pinning, generating, and bumping.
 - [The interface](docs/ui.md): what each panel is for and the question it answers.
+- [Five minutes worth watching](docs/demo.md): the viewing script — one run, every property turned on and watched land on a panel.
 - [Local development](docs/local-development.md): commands, ports, and the Compose stack.
 - [Known limits](docs/known-limits.md): what this client cannot see, and what it does instead.
 - [Roadmap](docs/roadmap.md): what M1 still needs, and what M3 and M4 add.
