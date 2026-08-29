@@ -58,11 +58,23 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
 
 ## M4: Showcase Release
 
+**Done:**
+
+- **The setup path, run from a fresh clone.** `nvm use`, `task setup`, `task up` against a scratch
+  clone of this repo (plus a fresh `signal-garden` clone for `task docker:build`) — all succeeded,
+  daemon and client both came up healthy, a run started. Not a fully clean _machine_: same Docker
+  image store, npm cache, and already-installed Node/Docker/`task` as everywhere else this was run
+  from — that's the gap still open. See [signal-garden's roadmap](https://github.com/DamoDCoder/signal-garden/blob/main/docs/roadmap.md)
+  for the full writeup, since the daemon half of the same check ran alongside this one.
+
+**Still open:**
+
 - Garden interactions worth watching for five minutes.
 - A deterministic demo seed reachable in one click, with the hash shown so the determinism claim is
   checkable on screen.
 - A production build rather than a dev server in Compose.
-- The setup path verified from a clean machine.
+- A genuinely clean _machine_ — this repo's setup has only been run on machines that already had
+  the toolchain installed.
 - Pre-configured Prometheus and Jaeger dashboards for `compose.observability.yaml` — provisioned so
   `task observability:up` opens straight into a built dashboard rather than an empty query box.
 
