@@ -95,6 +95,25 @@ tasks:
     cmds:
       - docker compose down
 
+  observability:up:
+    desc: 'Start the stack plus Prometheus (:9091) and Jaeger (:16686) — see compose.observability.yaml'
+    env:
+      SIGNAL_GARDEN_IMAGE: '{{.IMAGE | default .DAEMON_IMAGE}}'
+      SIGNAL_GARDEN_IMAGE_TAG: '{{.TAG | default .DAEMON_TAG}}'
+    deps:
+      - task: check-image
+        vars: { IMAGE: '{{.IMAGE}}', TAG: '{{.TAG}}' }
+    cmds:
+      - docker compose -f compose.yaml -f compose.observability.yaml up --build {{.CLI_ARGS}}
+
+  observability:down:
+    desc: Stop the observability-overlay stack
+    env:
+      SIGNAL_GARDEN_IMAGE: '{{.DAEMON_IMAGE}}'
+      SIGNAL_GARDEN_IMAGE_TAG: '{{.DAEMON_TAG}}'
+    cmds:
+      - docker compose -f compose.yaml -f compose.observability.yaml down
+
   reset:
     desc: Stop the stack and delete every run history it wrote
     env:

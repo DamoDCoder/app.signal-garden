@@ -1,0 +1,8 @@
+# Scrapes the daemon's /metrics inside the compose network, where it is
+# reachable by service name rather than the published host port. 5s keeps a
+# demo's counters moving visibly without hammering a single local process.
+scrape_configs:
+  - job_name: signalgardend
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['garden:8080']

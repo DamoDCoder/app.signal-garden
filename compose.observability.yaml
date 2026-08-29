@@ -1,0 +1,43 @@
+# Prometheus and Jaeger, as an overlay on compose.yaml — not folded into it.
+#
+# Neither is needed to run the stack: `curl localhost:8080/metrics` already
+# answers Prometheus's own scrape format with no server of its own, and
+# tracing is off by default (docs/decisions/0016, 0019 in the daemon repo).
+# This file exists for the demo where a browsable dashboard and a trace
+# waterfall are worth more than curl — bring it up alongside the main stack:
+#
+#   docker compose -f compose.yaml -f compose.observability.yaml up
+#   task observability:up   # the same thing, via Taskfile.yml
+#
+# It joins the same default network compose.yaml's services do, so
+# `garden:8080` and `jaeger:4317` resolve by service name the way `web`
+# already resolves `garden`.
+
+services:
+  garden:
+    environment:
+      # Empty (compose.yaml's implicit default) means tracing costs nothing.
+      # Set here rather than in compose.yaml because this file is what turns
+      # it on.
+      SIGNAL_GARDEN_OTEL_ENDPOINT: jaeger:4317
+    depends_on:
+      jaeger:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      # 9091, not 9090 — the daemon's gRPC listener already publishes 9090 on
+      # the host. No collision inside the compose network; only the host-side
+      # mapping needs to move.
+      - '9091:9090'
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    # No named volume: this is a demo tool, not a monitoring deployment, and
+    # `task reset`-style disposability matters more than retained history.
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - '16686:16686' # UI
+      - '4317:4317' # OTLP/gRPC — SIGNAL_GARDEN_OTEL_ENDPOINT points here

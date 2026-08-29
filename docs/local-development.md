@@ -60,11 +60,35 @@ builds for an x86 machine instead — and a cross build deliberately does not mo
 
 ## Ports
 
-| Port | What                                                                            |
-| ---- | ------------------------------------------------------------------------------- |
-| 5173 | This client's dev server                                                        |
-| 8080 | The daemon: generated REST routes, the projection stream, `/healthz`, `/readyz` |
-| 9090 | The daemon's gRPC listener, exposed so `grpcurl` works against a running stack  |
+| Port  | What                                                                            |
+| ----- | ------------------------------------------------------------------------------- |
+| 5173  | This client's dev server                                                        |
+| 8080  | The daemon: generated REST routes, the projection stream, `/healthz`, `/readyz` |
+| 9090  | The daemon's gRPC listener, exposed so `grpcurl` works against a running stack  |
+| 9091  | Prometheus UI, `task observability:up` only — see below                         |
+| 16686 | Jaeger UI, `task observability:up` only                                         |
+| 4317  | Jaeger's OTLP/gRPC receiver, `task observability:up` only                       |
+
+## Prometheus And Traces
+
+Neither is needed to run the stack. `curl localhost:8080/metrics` already answers Prometheus's own
+scrape format with nothing extra running, and tracing is off by default — see
+[0016](https://github.com/DamoDCoder/signal-garden/blob/main/docs/decisions/0016-prometheus-metrics-carry-no-run-id-label.md)
+and [0019](https://github.com/DamoDCoder/signal-garden/blob/main/docs/decisions/0019-traces-are-tick-and-rpc-grained-not-per-event.md)
+in the daemon repository. `compose.observability.yaml` is for the demo where a dashboard and a trace
+waterfall are worth more than `curl`:
+
+```sh
+task observability:up      # everything task up starts, plus Prometheus and Jaeger
+```
+
+It is an overlay (`docker compose -f compose.yaml -f compose.observability.yaml up`), not a second
+stack — the same `garden`/`web` services, joined by `prometheus` and `jaeger` on the same network,
+with `SIGNAL_GARDEN_OTEL_ENDPOINT` pointed at `jaeger:4317` only in this file. Open
+`http://localhost:9091` for Prometheus (`signal_garden_events_processed_total`,
+`signal_garden_pending_events`, and the rest of `/metrics`, queryable and graphable) and
+`http://localhost:16686` for Jaeger — start a run, and both a `StartRun` RPC span and a `tick` span
+per tick appear under the `signalgardend` service. `task observability:down` stops it.
 
 ## Working Against A Daemon Checkout
 
