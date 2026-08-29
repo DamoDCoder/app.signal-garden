@@ -18,6 +18,12 @@ duplicate counter climbs. That is the M2 exit criterion, clickable.
 The seed is next to it for the same reason: two runs with the same seed and the same control ticks
 reach the same garden, and the hash under the garden is how that gets checked rather than asserted.
 
+The form's defaults _are_ the demo seed — `42`, 20 organisms, the balanced starting mix — and say so
+in a line above the fields rather than leaving it a coincidence a returning visitor has to notice.
+The M4 exit criterion is "a deterministic demo seed reachable in one click, with the hash shown so
+the claim is checkable" — that click is already "Start run" with nothing touched, since nothing
+about it needed inventing once the defaults already matched.
+
 ## During A Run
 
 | Panel             | Question                                    | Reads                                       |

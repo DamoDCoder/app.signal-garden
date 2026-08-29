@@ -64,6 +64,11 @@ export function RunLauncher({ onStarted }: RunLauncherProps): ReactNode {
     <form className="panel run-launcher" onSubmit={(e) => void submit(e)}>
       <h2>Start a run</h2>
 
+      <p className="hint">
+        These fields are already the demo seed — Start run with nothing changed for a deterministic
+        garden. The hash under it is the claim: run it again unchanged and get the same one back.
+      </p>
+
       <label>
         Run ID <small>optional — the daemon picks a free one</small>
         <input value={runId} onChange={(e) => setRunId(e.target.value)} placeholder="demo" />

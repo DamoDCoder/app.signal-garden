@@ -66,12 +66,16 @@ its own tick — no button, no manual reconnect, the same path a dropped WiFi co
   image store, npm cache, and already-installed Node/Docker/`task` as everywhere else this was run
   from — that's the gap still open. See [signal-garden's roadmap](https://github.com/DamoDCoder/signal-garden/blob/main/docs/roadmap.md)
   for the full writeup, since the daemon half of the same check ran alongside this one.
+- **A deterministic demo seed reachable in one click, hash shown.** Turned out to already be true —
+  `RunLauncher`'s defaults (seed `42`, 20 organisms, the balanced starting mix) already were the
+  demo seed, verified by starting two independent runs with nothing changed and confirming identical
+  hashes at the same tick. What was missing was saying so: a line above the form now states the
+  defaults are the demo, rather than leaving a returning visitor to notice a coincidence. No new
+  mechanics — reusing the existing `.hint` style, not a new affordance.
 
 **Still open:**
 
 - Garden interactions worth watching for five minutes.
-- A deterministic demo seed reachable in one click, with the hash shown so the determinism claim is
-  checkable on screen.
 - A production build rather than a dev server in Compose.
 - A genuinely clean _machine_ — this repo's setup has only been run on machines that already had
   the toolchain installed.
